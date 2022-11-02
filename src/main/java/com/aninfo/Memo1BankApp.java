@@ -1,5 +1,6 @@
 package com.aninfo;
 
+import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.model.Account;
 import com.aninfo.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,16 +66,29 @@ public class Memo1BankApp {
 		accountService.deleteById(cbu);
 	}
 
-	@PutMapping("/accounts/{cbu}/withdraw")
-	public Account withdraw(@PathVariable Long cbu, @RequestParam Double sum) {
-		return accountService.withdraw(cbu, sum);
+	@PostMapping("/accounts/{cbu}/deposit")
+	public Account newDeposit(@PathVariable Long cbu, @RequestParam Double sum) {
+		throw new InvalidTransactionTypeException("Not implemented");
 	}
 
-	@PutMapping("/accounts/{cbu}/deposit")
-	public Account deposit(@PathVariable Long cbu, @RequestParam Double sum) {
-		return accountService.deposit(cbu, sum);
+	@PostMapping("/accounts/{cbu}/withdrawal")
+	public Account newWithdrawal(@PathVariable Long cbu, @RequestParam Double sum){
+		throw new InvalidTransactionTypeException("Not implemented");
 	}
 
+	@GetMapping("/accounts/{cbu}/transactions")
+	public Account transactions(@PathVariable Long cbu) {throw new InvalidTransactionTypeException("Not Implemented");
+	}
+
+	@GetMapping("/transactions/{transactionId}")
+	public Account getTransaction(@PathVariable Long transactionId){
+		throw new InvalidTransactionTypeException("Not implemented");
+	}
+
+	@DeleteMapping("/transactions/{transactionId}")
+	public Account deleteTransaction(@PathVariable Long transactionId){
+		throw new InvalidTransactionTypeException("Not implemented");
+	}
 	@Bean
 	public Docket apiDocket() {
 		return new Docket(DocumentationType.SWAGGER_2)
