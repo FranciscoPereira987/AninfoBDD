@@ -2,7 +2,9 @@ package com.aninfo;
 
 import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.model.Account;
+import com.aninfo.model.Transaction;
 import com.aninfo.service.AccountService;
+import com.aninfo.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,6 +29,9 @@ public class Memo1BankApp {
 
 	@Autowired
 	private AccountService accountService;
+
+	@Autowired
+	private TransactionService transactionService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(Memo1BankApp.class, args);
@@ -66,27 +71,44 @@ public class Memo1BankApp {
 		accountService.deleteById(cbu);
 	}
 
-	@PostMapping("/accounts/{cbu}/deposit")
-	public Account newDeposit(@PathVariable Long cbu, @RequestParam Double sum) {
-		throw new InvalidTransactionTypeException("Not implemented");
+	@PostMapping("/accounts/deposit")
+	@ResponseStatus(HttpStatus.CREATED)
+	public Transaction newDeposit(@RequestBody Transaction transaction) {
+		Optional<Account> account = accountService.findById(transaction.getDoerCbu());
+
+		if(!account.isPresent()){
+			throw new InvalidTransactionTypeException("Invalid deposit");
+		}
+
+		return transactionService.createDeposit(transaction, account.get());
 	}
 
 	@PostMapping("/accounts/{cbu}/withdrawal")
-	public Account newWithdrawal(@PathVariable Long cbu, @RequestParam Double sum){
-		throw new InvalidTransactionTypeException("Not implemented");
+	@ResponseStatus(HttpStatus.CREATED)
+	public Transaction newWithdrawal(@RequestBody Transaction transaction){
+		Optional<Account> account = accountService.findById(transaction.getDoerCbu());
+
+		if(!account.isPresent()){
+			throw new InvalidTransactionTypeException("Invalid deposit");
+		}
+
+		return transactionService.createWithdrawal(transaction, account.get());
 	}
 
 	@GetMapping("/accounts/{cbu}/transactions")
-	public Account transactions(@PathVariable Long cbu) {throw new InvalidTransactionTypeException("Not Implemented");
+	public Collection<Transaction> transactions(@PathVariable Long cbu) {
+		return this.transactionService.getTransactions();
 	}
 
 	@GetMapping("/transactions/{transactionId}")
-	public Account getTransaction(@PathVariable Long transactionId){
-		throw new InvalidTransactionTypeException("Not implemented");
+	public ResponseEntity<Transaction> getTransaction(@PathVariable Long transactionId){
+		Optional<Transaction> optionalTransaction = this.transactionService.getTransaction(transactionId);
+
+		return ResponseEntity.of(optionalTransaction);
 	}
 
 	@DeleteMapping("/transactions/{transactionId}")
-	public Account deleteTransaction(@PathVariable Long transactionId){
+	public void deleteTransaction(@PathVariable Long transactionId){
 		throw new InvalidTransactionTypeException("Not implemented");
 	}
 	@Bean

@@ -1,12 +1,14 @@
 package com.aninfo.model;
 
+import org.springframework.context.annotation.Primary;
+
 import javax.persistence.*;
 
 @Entity
 public class Transaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private Long transactionId;
 
     private Long doerCbu;
