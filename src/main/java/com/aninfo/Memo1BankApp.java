@@ -2,9 +2,9 @@ package com.aninfo;
 
 import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.model.Account;
-import com.aninfo.model.Transaction;
+import com.aninfo.model.Operation;
 import com.aninfo.service.AccountService;
-import com.aninfo.service.TransactionService;
+import com.aninfo.service.OperationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,9 +29,6 @@ public class Memo1BankApp {
 
 	@Autowired
 	private AccountService accountService;
-
-	@Autowired
-	private TransactionService transactionService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(Memo1BankApp.class, args);
@@ -73,36 +70,26 @@ public class Memo1BankApp {
 
 	@PostMapping("/accounts/deposit")
 	@ResponseStatus(HttpStatus.CREATED)
-	public Transaction newDeposit(@RequestBody Transaction transaction) {
-		Optional<Account> account = accountService.findById(transaction.getDoerCbu());
+	public Operation newDeposit(@RequestBody Operation operation) {
 
-		if(!account.isPresent()){
-			throw new InvalidTransactionTypeException("Invalid deposit");
-		}
-
-		return transactionService.createDeposit(transaction, account.get());
+		return accountService.createDeposit(operation);
 	}
 
-	@PostMapping("/accounts/{cbu}/withdrawal")
+	@PostMapping("/accounts/withdrawal")
 	@ResponseStatus(HttpStatus.CREATED)
-	public Transaction newWithdrawal(@RequestBody Transaction transaction){
-		Optional<Account> account = accountService.findById(transaction.getDoerCbu());
+	public Operation newWithdrawal(@RequestBody Operation operation){
 
-		if(!account.isPresent()){
-			throw new InvalidTransactionTypeException("Invalid deposit");
-		}
-
-		return transactionService.createWithdrawal(transaction, account.get());
+		return accountService.createWithdrawal(operation);
 	}
 
-	@GetMapping("/accounts/{cbu}/transactions")
-	public Collection<Transaction> transactions(@PathVariable Long cbu) {
-		return this.transactionService.getTransactions();
+	@GetMapping("/accounts/transactions")
+	public Collection<Operation> transactions(@RequestParam Long cbu) {
+		return accountService.getTransactionsFrom(cbu);
 	}
 
 	@GetMapping("/transactions/{transactionId}")
-	public ResponseEntity<Transaction> getTransaction(@PathVariable Long transactionId){
-		Optional<Transaction> optionalTransaction = this.transactionService.getTransaction(transactionId);
+	public ResponseEntity<Operation> getTransaction(@PathVariable Long transactionId){
+		Optional<Operation> optionalTransaction = accountService.getTransaction(transactionId);
 
 		return ResponseEntity.of(optionalTransaction);
 	}
