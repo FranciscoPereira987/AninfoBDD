@@ -64,25 +64,13 @@ public class AccountService {
         }
 
         Account account = accountRepository.findAccountByCbu(cbu);
+        sum = operationService.applyPromo(sum);
         account.setBalance(account.getBalance() + sum);
         accountRepository.save(account);
 
-        return tryApplyPromo(account, sum);
-    }
-
-    @Transactional
-    public Account tryApplyPromo(Account account, Double depositedSum){
-        Optional<Operation> optionalPromoDeposit = Operation.tryCreatePromo(account.getCbu(), depositedSum);
-
-        if (optionalPromoDeposit.isPresent()){
-            Operation promoDeposit = optionalPromoDeposit.get();
-            operationService.createDeposit(promoDeposit);
-            account.setBalance(account.getBalance() + promoDeposit.getAmount());
-            accountRepository.save(account);
-        }
-
         return account;
     }
+
 
     @Transactional
     public Operation createDeposit(Operation operation){
@@ -92,8 +80,9 @@ public class AccountService {
             throw new InvalidTransactionTypeException("Invalid operation");
         }
 
+        Double sum = operation.getAmount();
         Operation executedOperation = operationService.createDeposit(operation);
-        Account account = deposit(optionalAccount.get().getCbu(),  operation.getAmount());
+        Account account = deposit(optionalAccount.get().getCbu(),  sum);
 
         return executedOperation;
     }
@@ -106,9 +95,9 @@ public class AccountService {
         if(!optionalAccount.isPresent()){
             throw new InvalidTransactionTypeException("Invalid operation");
         }
-
+        Double sum = operation.getAmount();
         Operation executedOperation = operationService.createWithdrawal(operation);
-        Account account = withdraw(optionalAccount.get().getCbu(), operation.getAmount());
+        Account account = withdraw(optionalAccount.get().getCbu(), sum);
 
 
         return executedOperation;
@@ -122,7 +111,25 @@ public class AccountService {
         return operationService.getTransaction(operationId);
     }
 
+    public void deleteTransaction(Long operationId){
+        Operation toBeDeleted = operationService.getTransaction(operationId).get();
+        rollBackOperation(toBeDeleted);
+        operationService.deleteTransaction(operationId);
 
+    }
 
+    private void rollBackOperation(Operation operation){
+        Double rollbackSum = operation.getAmount();
+        Long rollbackAccount = operation.getAccountCbu();
 
+        Account account = accountRepository.findAccountByCbu(rollbackAccount);
+        Double newBalance = account.getBalance() - rollbackSum;
+
+        if (newBalance < 0){
+            throw new InvalidTransactionTypeException("Cannot delete transaction");
+        }
+
+        account.setBalance(newBalance);
+        accountRepository.save(account);
+    }
 }

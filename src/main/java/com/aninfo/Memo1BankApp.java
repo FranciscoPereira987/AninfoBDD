@@ -96,7 +96,7 @@ public class Memo1BankApp {
 
 	@DeleteMapping("/transactions/{transactionId}")
 	public void deleteTransaction(@PathVariable Long transactionId){
-		throw new InvalidTransactionTypeException("Not implemented");
+		accountService.deleteTransaction(transactionId);
 	}
 	@Bean
 	public Docket apiDocket() {
