@@ -15,11 +15,11 @@ public class Transaction {
 
     public Transaction(){}
 
-    public void setOperationId(Long operationId) {
-        this.transactionId = operationId;
+    public void getTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 
-    public Long getOperationId() {
+    public Long getTransactionId() {
         return transactionId;
     }
 
