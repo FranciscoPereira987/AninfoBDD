@@ -4,7 +4,7 @@ import com.aninfo.exceptions.DepositNegativeSumException;
 import com.aninfo.exceptions.InsufficientFundsException;
 import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.model.Account;
-import com.aninfo.model.Operation;
+import com.aninfo.model.Transaction;
 import com.aninfo.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     @Autowired
-    private OperationService operationService;
+    private TransactionService transactionService;
 
     public Account createAccount(Account account) {
         return accountRepository.save(account);
@@ -64,7 +64,7 @@ public class AccountService {
         }
 
         Account account = accountRepository.findAccountByCbu(cbu);
-        sum = operationService.applyPromo(sum);
+        sum = transactionService.applyPromo(sum);
         account.setBalance(account.getBalance() + sum);
         accountRepository.save(account);
 
@@ -73,54 +73,54 @@ public class AccountService {
 
 
     @Transactional
-    public Operation createDeposit(Operation operation){
-        Optional<Account> optionalAccount = accountRepository.findById(operation.getAccountCbu());
+    public Transaction createDeposit(Transaction transaction){
+        Optional<Account> optionalAccount = accountRepository.findById(transaction.getAccountCbu());
 
         if(!optionalAccount.isPresent()){
             throw new InvalidTransactionTypeException("Invalid operation");
         }
 
-        Double sum = operation.getAmount();
-        Operation executedOperation = operationService.createDeposit(operation);
+        Double sum = transaction.getAmount();
+        Transaction executedTransaction = transactionService.createDeposit(transaction);
         Account account = deposit(optionalAccount.get().getCbu(),  sum);
 
-        return executedOperation;
+        return executedTransaction;
     }
 
 
     @Transactional
-    public Operation createWithdrawal(Operation operation){
-        Optional<Account> optionalAccount = accountRepository.findById(operation.getAccountCbu());
+    public Transaction createWithdrawal(Transaction transaction){
+        Optional<Account> optionalAccount = accountRepository.findById(transaction.getAccountCbu());
 
         if(!optionalAccount.isPresent()){
             throw new InvalidTransactionTypeException("Invalid operation");
         }
-        Double sum = operation.getAmount();
-        Operation executedOperation = operationService.createWithdrawal(operation);
+        Double sum = transaction.getAmount();
+        Transaction executedTransaction = transactionService.createWithdrawal(transaction);
         Account account = withdraw(optionalAccount.get().getCbu(), sum);
 
 
-        return executedOperation;
+        return executedTransaction;
     }
 
-    public Collection<Operation> getTransactionsFrom(Long cbu){
-        return operationService.getTransactionsFrom(cbu);
+    public Collection<Transaction> getTransactionsFrom(Long cbu){
+        return transactionService.getTransactionsFrom(cbu);
     }
 
-    public Optional<Operation> getTransaction(Long operationId){
-        return operationService.getTransaction(operationId);
+    public Optional<Transaction> getTransaction(Long transactionId){
+        return transactionService.getTransaction(transactionId);
     }
 
-    public void deleteTransaction(Long operationId){
-        Operation toBeDeleted = operationService.getTransaction(operationId).get();
-        rollBackOperation(toBeDeleted);
-        operationService.deleteTransaction(operationId);
+    public void deleteTransaction(Long transactionId){
+        Transaction toBeDeleted = transactionService.getTransaction(transactionId).get();
+        rollBackTransaction(toBeDeleted);
+        transactionService.deleteTransaction(transactionId);
 
     }
 
-    private void rollBackOperation(Operation operation){
-        Double rollbackSum = operation.getAmount();
-        Long rollbackAccount = operation.getAccountCbu();
+    private void rollBackTransaction(Transaction transaction){
+        Double rollbackSum = transaction.getAmount();
+        Long rollbackAccount = transaction.getAccountCbu();
 
         Account account = accountRepository.findAccountByCbu(rollbackAccount);
         Double newBalance = account.getBalance() - rollbackSum;

@@ -1,27 +1,26 @@
 package com.aninfo.model;
 
 import javax.persistence.*;
-import java.util.Optional;
 
 @Entity
-public class Operation {
+public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private Long operationId;
+    private Long transactionId;
 
     private Long accountCbu;
 
     private Double amount;
 
-    public Operation(){}
+    public Transaction(){}
 
     public void setOperationId(Long operationId) {
-        this.operationId = operationId;
+        this.transactionId = operationId;
     }
 
     public Long getOperationId() {
-        return operationId;
+        return transactionId;
     }
 
     public void asWithdrawal(){

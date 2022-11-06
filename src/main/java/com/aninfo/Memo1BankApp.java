@@ -1,10 +1,8 @@
 package com.aninfo;
 
-import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.model.Account;
-import com.aninfo.model.Operation;
+import com.aninfo.model.Transaction;
 import com.aninfo.service.AccountService;
-import com.aninfo.service.OperationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -70,26 +68,26 @@ public class Memo1BankApp {
 
 	@PostMapping("/accounts/deposit")
 	@ResponseStatus(HttpStatus.CREATED)
-	public Operation newDeposit(@RequestBody Operation operation) {
+	public Transaction newDeposit(@RequestBody Transaction transaction) {
 
-		return accountService.createDeposit(operation);
+		return accountService.createDeposit(transaction);
 	}
 
 	@PostMapping("/accounts/withdrawal")
 	@ResponseStatus(HttpStatus.CREATED)
-	public Operation newWithdrawal(@RequestBody Operation operation){
+	public Transaction newWithdrawal(@RequestBody Transaction transaction){
 
-		return accountService.createWithdrawal(operation);
+		return accountService.createWithdrawal(transaction);
 	}
 
 	@GetMapping("/accounts/transactions")
-	public Collection<Operation> transactions(@RequestParam Long cbu) {
+	public Collection<Transaction> transactions(@RequestParam Long cbu) {
 		return accountService.getTransactionsFrom(cbu);
 	}
 
 	@GetMapping("/transactions/{transactionId}")
-	public ResponseEntity<Operation> getTransaction(@PathVariable Long transactionId){
-		Optional<Operation> optionalTransaction = accountService.getTransaction(transactionId);
+	public ResponseEntity<Transaction> getTransaction(@PathVariable Long transactionId){
+		Optional<Transaction> optionalTransaction = accountService.getTransaction(transactionId);
 
 		return ResponseEntity.of(optionalTransaction);
 	}
